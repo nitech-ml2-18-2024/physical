@@ -3,9 +3,9 @@ import numpy as np
 from scipy.io.wavfile import write
 
 # 設定
-RATE = 44100  # サンプリングレート
+RATE = 44100 # サンプリングレート
 CHUNK = 1024  # フレームサイズ
-THRESHOLD = 0.02  # インパルス検出の閾値（ノイズに応じて調整）
+THRESHOLD = 0.04  # インパルス検出の閾値（ノイズに応じて調整）
 
 # PyAudioの初期化
 p = pyaudio.PyAudio()
@@ -16,7 +16,7 @@ stream = p.open(format=pyaudio.paFloat32,
                 frames_per_buffer=CHUNK)
 
 print("Listening for impulse...")
-
+prevolume = 0
 try:
     while True:
         # 音声データの取得
@@ -28,8 +28,9 @@ try:
         volume = np.linalg.norm(audio_data) / np.sqrt(len(audio_data))
         
         # 閾値と比較してインパルスを検出
-        if volume > THRESHOLD:
+        if prevolume - volume > THRESHOLD:
             print("Impulse detected! Volume:", volume)
+        prevolume = volume
 except KeyboardInterrupt:
     print("Stopped listening.")
 
